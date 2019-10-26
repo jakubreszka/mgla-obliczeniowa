@@ -11,6 +11,6 @@ print('Sever is up and running')
 while 1:
     client_socket, client_address = serv_socket.accept()
     print('Connection with: ', client_address)
-    data = serv_socket.recv(size)
+    data = client_socket.recv(size)
     print(data)
     #client_socket.close()
