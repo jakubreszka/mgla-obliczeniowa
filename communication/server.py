@@ -1,4 +1,5 @@
-import socket 
+import socket
+from testtt import message
 
 serv_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 port_number = 5000
@@ -12,5 +13,8 @@ while 1:
     client_socket, client_address = serv_socket.accept()
     print('Connection with: ', client_address)
     data = client_socket.recv(size)
-    print(data)
+    if data == 'runtest':
+        print(message)
+    else:
+        print(data)
     #client_socket.close()
