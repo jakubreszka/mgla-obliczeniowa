@@ -5,6 +5,7 @@ port_number = 5000
 size = 1024
 serv_socket.bind(('', port_number))
 serv_socket.listen(5)
+print('Sever is up and running')
 
 while 1:
     (client_socket, client_address) = serv_socket.accept()
