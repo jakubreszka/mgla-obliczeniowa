@@ -1,4 +1,4 @@
-import socket
+import socket, sys
 
 
 server_ip   = '192.168.0.6'
@@ -11,4 +11,4 @@ message = "Test message"
 
 client_socket.sendto(message.encode('utf-8'),(server_ip, port_number))
 
-#sys.exit()
+sys.exit()

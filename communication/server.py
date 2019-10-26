@@ -11,4 +11,4 @@ while 1:
     print('Connection with: ', client_address)
     data = serv_socket.recv(size)
     print(data)
-    client_socket.close()
+    #client_socket.close()
