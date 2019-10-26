@@ -3,7 +3,8 @@ import socket
 serv_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 port_number = 5000
 size = 1024
-serv_socket.bind(('', port_number))
+serv_address = socket.gethostbyname('0.0.0.0')
+serv_socket.bind((serv_address, port_number))
 serv_socket.listen(5)
 print('Sever is up and running')
 
