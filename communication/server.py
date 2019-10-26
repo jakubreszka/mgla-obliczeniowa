@@ -1,16 +1,14 @@
-from socket import socket, gethostbyname, AF_INET, SOCK_DGRAM
-import sys
-PORT_NUMBER = 5000
-SIZE = 1024
+import socket 
 
-hostName = gethostbyname( '0.0.0.0' )
+serv_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+port_number = 5000
+size = 1024
+serv_socket.bind(('', port_number))
+serv_socket.listen(5)
 
-mySocket = socket( AF_INET, SOCK_DGRAM )
-mySocket.bind( (hostName, PORT_NUMBER) )
-
-print ("Test server listening on port {0}\n".format(PORT_NUMBER))
-
-while True:
-    (data,addr) = mySocket.recvfrom(SIZE)
+while 1:
+    (client_socket, client_address) = serv_socket.accept()
+    print('Connection with: ', client_address)
+    data = serv_socket.recv(size)
     print(data)
-sys.exit()
+    client_socket.close()
