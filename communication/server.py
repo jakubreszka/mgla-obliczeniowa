@@ -9,7 +9,7 @@ serv_socket.listen(5)
 print('Sever is up and running')
 
 while 1:
-    (client_socket, client_address) = serv_socket.accept()
+    client_socket, client_address = serv_socket.accept()
     print('Connection with: ', client_address)
     data = serv_socket.recv(size)
     print(data)
