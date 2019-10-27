@@ -14,7 +14,7 @@ while 1:
     data = client_socket.recv(size).decode('utf-8')
     print(data)
     if data == 'runtest':
-        todo = open('testtt,py', 'r')
+        todo = open('testtt.py', 'r')
         code_str = todo.read()
         todo.close()
         code = compile(code_str, 'testtt.py', exec)
