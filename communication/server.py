@@ -12,9 +12,9 @@ print('Sever is up and running')
 while 1:
     client_socket, client_address = serv_socket.accept()
     print('Connection with: ', client_address)
-    data = client_socket.recv(size)
+    data = client_socket.recv(size).rstrip()
     if data == 'runtest':
-        print(message)
+        exec(message)
     else:
         print(data)
     #client_socket.close()
