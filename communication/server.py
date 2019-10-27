@@ -19,7 +19,7 @@ while 1:
         todo.close()
         code = compile(code_str, 'testtt.py', 'exec')
         tosend = exec(code)
-        serv_socket.send(data)
+        serv_socket.send(tosend)
     else:
         print(data)
     #client_socket.close()
