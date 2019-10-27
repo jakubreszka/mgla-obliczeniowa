@@ -13,7 +13,8 @@ while 1:
     client_socket, client_address = serv_socket.accept()
     print('Connection with: ', client_address)
     data = client_socket.recv(size).rstrip()
-    if data == 'runtest':
+    print(data)
+    if 1234:
         exec(message)
     else:
         print(data)

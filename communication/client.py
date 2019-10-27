@@ -7,7 +7,7 @@ SIZE = 1024
 print ("Test client sending packets to IP {0}, via port {1}\n".format(server_ip, port_number))
 
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-message = 'runtest'.encode('utf-8')
+message = 1234
 try:
     client_socket.connect((server_ip, port_number))
     client_socket.send(message)
