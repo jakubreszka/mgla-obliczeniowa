@@ -1,5 +1,4 @@
 import socket
-import testtt
 
 serv_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 port_number = 5000
@@ -14,8 +13,12 @@ while 1:
     print('Connection with: ', client_address)
     data = client_socket.recv(size).rstrip()
     print(data)
-    if 1234:
-        exec(testtt.message)
+    if data == 1234:
+        todo = open('testtt,py', 'r')
+        code_str = todo.read()
+        todo.close()
+        code = compile(code_str, 'testtt.py', exec)
+        exec(code)
     else:
         print(data)
     #client_socket.close()
