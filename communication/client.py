@@ -11,7 +11,7 @@ message = input().encode('utf-8')
 try:
     client_socket.connect((server_ip, port_number))
     client_socket.send(message)
-    data = client_socket.recv(SIZE).decode('utf-8')
+    data = client_socket.recv(SIZE)
     print(data)
 except socket.error:
     pass
