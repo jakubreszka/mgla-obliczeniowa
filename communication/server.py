@@ -11,9 +11,9 @@ print('Sever is up and running')
 while 1:
     client_socket, client_address = serv_socket.accept()
     print('Connection with: ', client_address)
-    data = client_socket.recv(size).rstrip()
+    data = client_socket.recv(size).decode('utf-8')
     print(data)
-    if data == 1234:
+    if data == 'runtest':
         todo = open('testtt,py', 'r')
         code_str = todo.read()
         todo.close()
