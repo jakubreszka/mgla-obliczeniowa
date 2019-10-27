@@ -20,6 +20,7 @@ while 1:
         client_socket.send(tosend)
     elif data == 'transpose':
         tosend = matrix_functions.transpose([[1,2],[3,4]])
+        print(tosend)
         client_socket.send(tosend)
     else:
         print(data)
