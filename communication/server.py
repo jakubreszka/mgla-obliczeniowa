@@ -23,7 +23,7 @@ while 1:
         # print(tosend)
         # serv_socket.send(tosend)
         tosend = testtt.message('XD')
-        serv_socket.send(tosend)
+        client_socket.send(tosend)
     else:
         print(data)
     #client_socket.close()
