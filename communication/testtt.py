@@ -1,3 +1,4 @@
 def message(msg):
-    msg = 'XD'
     return msg.encode('utf-8')
+
+message('XD')
