@@ -1,3 +1,2 @@
-def message(msg):
-    msg = 'XD'
-    print(msg)
+msg = 'XD'
+print(msg)
