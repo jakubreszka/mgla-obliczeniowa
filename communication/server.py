@@ -1,5 +1,5 @@
 import socket
-from testtt import message
+import testtt
 
 serv_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 port_number = 5000
@@ -15,7 +15,7 @@ while 1:
     data = client_socket.recv(size).rstrip()
     print(data)
     if 1234:
-        exec(message)
+        exec(testtt.message)
     else:
         print(data)
     #client_socket.close()
