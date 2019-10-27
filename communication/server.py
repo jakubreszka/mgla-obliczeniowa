@@ -18,7 +18,7 @@ while 1:
         code_str = todo.read()
         todo.close()
         code = compile(code_str, 'testtt.py', 'exec')
-        tosend = exec(code)
+        tosend = eval(code)
         print(tosend)
         serv_socket.send(tosend)
     else:
