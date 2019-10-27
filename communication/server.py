@@ -1,5 +1,6 @@
 import socket
 import testtt
+import matrix_functions
 
 serv_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 port_number = 5000
@@ -13,7 +14,7 @@ while 1:
     client_socket, client_address = serv_socket.accept()
     print('Polaczono z: ', client_address)
     data = client_socket.recv(size).decode('utf-8')
-    print("Otrzymano polecenie")
+    print('Otrzymano polecenie: {0}'.format(data))
     if data == 'runtest':
         # todo = open('testtt.py', 'r')
         # code_str = todo.read()
@@ -26,4 +27,4 @@ while 1:
         client_socket.send(tosend)
     else:
         print(data)
-    #client_socket.close()
+    client_socket.close()
