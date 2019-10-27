@@ -1,4 +1,5 @@
 import socket
+import testtt
 
 serv_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 port_number = 5000
@@ -14,12 +15,14 @@ while 1:
     data = client_socket.recv(size).decode('utf-8')
     print("Otrzymano polecenie")
     if data == 'runtest':
-        todo = open('testtt.py', 'r')
-        code_str = todo.read()
-        todo.close()
-        code = compile(code_str, 'testtt.py', 'exec')
-        tosend = exec(code_str)
-        print(tosend)
+        # todo = open('testtt.py', 'r')
+        # code_str = todo.read()
+        # todo.close()
+        # code = compile(code_str, 'testtt.py', 'exec')
+        # tosend = exec(code_str)
+        # print(tosend)
+        # serv_socket.send(tosend)
+        tosend = testtt.message('XD')
         serv_socket.send(tosend)
     else:
         print(data)
