@@ -16,13 +16,6 @@ while 1:
     data = client_socket.recv(size).decode('utf-8')
     print('Otrzymano polecenie: {0}'.format(data))
     if data == 'runtest':
-        # todo = open('testtt.py', 'r')
-        # code_str = todo.read()
-        # todo.close()
-        # code = compile(code_str, 'testtt.py', 'exec')
-        # tosend = exec(code_str)
-        # print(tosend)
-        # serv_socket.send(tosend)
         tosend = testtt.message('XD')
         client_socket.send(tosend)
     else:
