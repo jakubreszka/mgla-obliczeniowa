@@ -12,9 +12,7 @@ message = input().encode('utf-8')
 try:
     client_socket.connect((server_ip, port_number))
     client_socket.send(message)
-    new_data = client_socket.recv(SIZE)
-    #data = np.frombuffer(client_socket.recv(SIZE), dtype=np.float32)
-    #new_data = np.reshape(data, (2,2))
+    new_data = client_socket.recv(SIZE).decode('utf-8')
     print(new_data)
 except socket.error:
     pass
