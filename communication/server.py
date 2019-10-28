@@ -23,7 +23,7 @@ while 1:
         client_socket.send(tosend)
     elif data == 'inverse':
         tosend = matrix_functions.inverse(([1, 2], [3, 4])).encode('utf-8')
-        serv_socket.send(tosend)
+        client_socket.send(tosend)
     else:
         print(data)
     client_socket.close()
