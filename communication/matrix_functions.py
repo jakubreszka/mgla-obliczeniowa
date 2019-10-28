@@ -3,7 +3,7 @@ import numpy as np
 def transpose(matrix):
     n_matrix = np.matrix.transpose(np.array(matrix))
     #n_matrix = np.ascontiguousarray(n_matrix, dtype=np.float32)
-    n_matrix = np.array2string()
+    n_matrix = np.array_str(n_matrix)
     return n_matrix
 
 def inverse(matrix):
