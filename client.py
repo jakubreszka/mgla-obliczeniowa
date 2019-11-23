@@ -11,7 +11,6 @@ try:
     client_socket.connect((server_ip, port_number))
     print(f'Klient wysyła pakiety na adres: {server_ip}:{port_number}')
     while disconnect is False:
-        print('Wartosc disconnect ', disconnect)
         print('Podaj komende do wywołania: ', end='')
         message = input()
         client_socket.send(message.encode('utf-8'))

@@ -2,16 +2,6 @@ import socket
 import matrix_functions
 import threading
 
-# serv_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-# port_number = 5000
-# size = 1024
-# serv_address = socket.gethostbyname('0.0.0.0')
-# #serv_socket.bind((serv_address, port_number))
-# serv_socket.bind(('localhost', port_number))
-# serv_socket.listen(5)
-# print('Serwer uruchomiony')
-
-
 class FogServer():
     clients = []
     nodes = []
@@ -78,35 +68,30 @@ class FogServer():
         self.requesttype = ''
         while True:
             try:
-                data = client.recv(self.size).decode('utf-8')
-                print(f'Otrzymano polecenie {data} od klienta: {address}')
+                self.requesttype = client.recv(self.size).decode('utf-8')
+                print(f'Otrzymano polecenie {self.requesttype} od klienta: {address}')
                 if data == 'disconnect':
                     client.close()
                     print(f'{address} rozłączył się')
                     self.clients.remove(client)
                     self.showclients()
-                # elif data == 'transpose':
-                #     tosend = matrix_functions.transpose([[1,2],[3,4]]).encode('utf-8')
-                #     client.send(tosend)
-                # elif data == 'inverse':
-                #     tosend = matrix_functions.inverse(([1, 2], [3, 4])).encode('utf-8')
-                #     client.send(tosend)
-                self.requesttype = data
-                #return self.requesttype
+                client.send(self.answer.encode('utf-8'))
             except:
                 client.close()
                 return False
     
     def nodeconnection(self, node, address):
         self.answer = ''
-        while True:
-            try:
-                node.send(self.requesttype.encode('utf-8'))
-                #self.answer = node.recv(self.size).decode('utf-8')
-                #return self.answer
-            except:
-                node.close()
-                return False
+        #while True:
+        try:
+            print(f'Wysyłam polecenie {self.requesttype} na węzeł {address}')
+            node.send(self.requesttype.encode('utf-8'))
+            self.answer = node.recv(self.size)
+            self.answer.decode('utf-8')
+            print(self.answer)
+        except:
+            node.close()
+            return False
     
     def addclient(self, client):
         if client not in self.clients:
