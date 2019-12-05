@@ -2,6 +2,8 @@ import socket
 import numpy as np 
 import time
 import hashlib
+import json
+import threading
 
 def choosefile():
     try:
@@ -9,24 +11,23 @@ def choosefile():
         name = input()
         filename = name + '.txt'
         with open(filename, 'r') as f:
-            table = f.read()
+            table = json.load(f)
+        return table
     except:
         print('Blad odczytu')
-    finally:
-        return table
-
 
 server_ip   = 'localhost'
 port_number = 5000
 SIZE = 1024
 disconnect = False
-package = np.array([])
+newdata = ''
+package = {}
 localtime = str(time.time())
-print(localtime)
 h = hashlib.sha1()
 h.update(localtime.encode('utf-8'))
-print(h.digest())
-package = np.append(package, h)
+print(h.hexdigest())
+h_dig = h.hexdigest()
+package['sender'] = h_dig
 print(package)
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 try:
@@ -35,18 +36,26 @@ try:
     while disconnect is False:
         print('Podaj komende do wywołania: ', end='')
         message = input()
-        package = np.append(package, message)
+        package['request'] = message
         data = choosefile()
-        package = np.append(package, data)
-        stringpackage = np.array_str(package)
-        print(f'Wysyłam zapytanie: {stringpackage}')
-        client_socket.send(stringpackage.encode('utf-8'))
+        package['data'] = data
+        package_json = json.dumps(package)
+        print(f'Wysyłam zapytanie: {package_json}')
+        client_socket.send(package_json.encode('utf-8'))
         if message == 'disconnect':
             print('Rozłączam się z serwerem')
             disconnect = True
             break
-        new_data = client_socket.recv(SIZE).decode('utf-8')
-        print(new_data)
+        while True:
+            newdata = client_socket.recv(SIZE).decode('utf-8')
+            if newdata != '':
+                break
+        newdata_json = json.loads(newdata)
+        print('Otrzymano odpowiedz z serwera: ')
+        print(newdata_json['answer'])
+        answerfile = newdata_json['recieving_client'] + '.txt'
+        with open(answerfile, 'w+') as ans:
+            json.dump(newdata_json['answer'], ans)
 except socket.error:
     pass
 finally:
