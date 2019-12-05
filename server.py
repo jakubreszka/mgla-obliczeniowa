@@ -2,6 +2,7 @@ import socket
 import matrix_functions
 import threading
 import numpy as np
+import json
 
 class FogServer():
     clients = []
@@ -33,49 +34,75 @@ class FogServer():
         self.nodesocket.listen(10)
         print(f'Akceptowanie klientów pod adresem: {self.hostname}:{self.clientport}')
         print(f'Dodawanie węzłów pod adresem: {self.hostname}:{self.nodeport}')
+        print()
+        client_listener = threading.Thread(target= self.acceptclients)
+        node_listener = threading.Thread(target= self.acceptnodes)
+        client_listener.start()
+        node_listener.start()
+        client_listener.join()
+        node_listener.join()
+
+    def acceptclients(self):
         while True:
             client_socket, client_address = self.clientsocket.accept()
+            print(f'Klient podłączył się z adresu: {client_address}')
             self.client_threads.append(threading.Thread(target= self.clientconnection, args=(client_socket, client_address)))
             self.client_threads[-1].start()
             self.addclient(client_socket)
-            print(f'Klient podłączył się z adresu: {client_address}')
-            self.showclients()
-            print(self.client_threads)
+            print()
+            #self.showclients()
+            #print(self.client_threads)
+            #self.client_threads[-1].join()
+
+    def acceptnodes(self):
         while True:
             node_socket, node_address = self.nodesocket.accept()
+            print(f'Dodano węzeł pod adresem: {node_address}')
             self.node_threads.append(threading.Thread(target= self.nodeconnection, args=(node_socket, node_address)))
             self.node_threads[-1].start()
             self.addnode(node_socket)
-            print(f'Dodano węzeł pod adresem: {node_address}')
-            self.shownodes()
-            print(self.node_threads)
+            print()
+            #self.shownodes()
+            #print(self.node_threads)
+            #self.node_threads[-1].join()
 
     def clientconnection(self, client, address):
-        self.request = ''
+        tosend = {}
         while True:
             try:
                 self.request = client.recv(self.size).decode('utf-8')
                 print(f'Otrzymano polecenie {self.request} od klienta: {address}')
-                if data == 'disconnect':
-                    client.close()
+                print()
+                request_json = json.loads(self.request)
+                if request_json['request'] == 'disconnect':
                     print(f'{address} rozłączył się')
+                    client.close()
                     self.clients.remove(client)
-                    self.client_threads
                     self.showclients()
-                client.send(self.answer.encode('utf-8'))
+                #czesc wyzej wykonuje sie przed dodaniem noda
+                #petla while wykonuje sie w trakcie obslugi polaczenia noda
+                #kiedy znajduje traf, przerywa sie, konczy sie kod noda i wykonuje pozostaly tej funkcji
+                while True:
+                    if request_json['sender'] in self.answers:
+                        tosend = self.answers[request_json['sender']]
+                        print(f'Odpowiedź do wysłania klientowi: {tosend}')
+                        break 
+                tosend_json = json.dumps(tosend)
+                print('Wysyłam odpowiedź do klienta')
+                client.send(tosend_json.encode('utf-8'))
             except:
                 client.close()
                 return False
     
     def nodeconnection(self, node, address):
-        self.answer = ''
         #while True:
         try:
             print(f'Wysyłam polecenie {self.request} na węzeł {address}')
             node.send(self.request.encode('utf-8'))
-            self.answer = node.recv(self.size)
-            self.answer.decode('utf-8')
-            print(self.answer)
+            self.answer = node.recv(self.size).decode('utf-8')
+            print(f'Odpowiedź z węzła: {self.answer}')
+            answer_json = json.loads(self.answer)
+            self.answers[answer_json['recieving_client']] = answer_json
         except:
             node.close()
             return False
