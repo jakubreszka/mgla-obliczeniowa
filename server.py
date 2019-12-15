@@ -58,21 +58,22 @@ class FogServer():
             client_socket, client_address = self.clientsocket.accept()
             self.addclient(client_socket)
             print(f'\nKlient podłączył się z adresu: {client_address}\n')
+            self.showclients()
             self.client_threads.append(threading.Thread(target= self.clientconnection, args=(client_socket, client_address)))
             self.client_threads[-1].start()
-            self.showclients()
 
     def acceptnodes(self):
         while True:
             node_socket, node_address = self.nodesocket.accept()
+            self.node_queue.put((node_socket, node_address))
             self.addnode(node_socket)
             print(f'\nDodano węzeł pod adresem: {node_address}\n')
             self.shownodes()
             #self.node_threads.append(threading.Thread(target= self.nodeconnection, args=(node_socket, node_address)))
             self.node_threads.append(threading.Thread(target= self.nodeconnection, args=()))
             self.node_threads[-1].start()
-            self.node_queue.put((node_socket, node_address))
-            self.showqueue()
+            #self.node_queue.put((node_socket, node_address))
+            #self.showqueue()
 
     def clientconnection(self, client, address):
         tosend = {}
@@ -110,7 +111,9 @@ class FogServer():
                 while True:
                     if self.request != '':
                         break
+                #print('Kolejka wezlow: ' + str(list(self.node_queue.queue)))
                 node, address = self.node_queue.get()
+                #self.node_queue.put((node, address))
                 package = self.requests.get()
                 print(f'\nWysyłam polecenie na węzeł {address}')
                 node.send(json.dumps(package).encode('utf-8'))
@@ -121,7 +124,6 @@ class FogServer():
                 self.answer = ''
                 self.answers[answer_json['recieving_client']] = answer_json
                 self.node_queue.put((node, address))
-                print('Kolejka wezlow: ' + str(list(self.node_queue.queue)))
             except socket.error as exc:
                 print(str(exc))
                 node.close()
