@@ -40,12 +40,14 @@ try:
         data = choosefile()
         package['data'] = data
         package_json = json.dumps(package)
-        print(f'Wysyłam zapytanie: {package_json}')
+        print('Wysyłam zapytanie:')
+        print(f'{package_json}')
         client_socket.send(package_json.encode('utf-8'))
         if message == 'disconnect':
             print('Rozłączam się z serwerem')
             disconnect = True
             break
+        #zamienic na threada
         while True:
             newdata = client_socket.recv(SIZE).decode('utf-8')
             if newdata != '':
