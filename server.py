@@ -111,11 +111,11 @@ class FogServer():
                 while True:
                     if self.request != '':
                         break
+                print('\nStatus kolejki przed wyslaniem: \n' + str(self.nodes_queue))
                 node, address = self.select_node()
                 #node, address = self.nodes_queue[0]
-                #del self.nodes_queue[0]
                 #self.nodes_queue.append((node, address))
-                # print('\nStatus kolejki: \n' + str(self.nodes_queue))
+                #del self.nodes_queue[0]
                 package = self.requests.get()
                 print(f'\nWysyłam polecenie na węzeł {address}')
                 node.send(json.dumps(package).encode('utf-8'))
@@ -125,9 +125,7 @@ class FogServer():
                 answer_json = json.loads(self.answer)
                 self.answer = ''
                 self.answers[answer_json['recieving_client']] = answer_json
-                #del self.nodes_queue[0]
-                #self.nodes_queue.append((node, address))
-                print('\nStatus kolejki: \n' + str(self.nodes_queue))
+                print('\nStatus kolejki po aktualizacji: \n' + str(self.nodes_queue))
             except socket.error as exc:
                 print(str(exc))
                 node.close()
