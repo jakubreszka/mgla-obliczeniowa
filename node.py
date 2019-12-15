@@ -27,6 +27,7 @@ def run_node(ip, port):
         runner.start()
         while True:
             package_json = {}
+            tosend = {}
             if request_queue.empty() is False:
                 package_json = json.loads(request_queue.get())
                 print(f'Otrzymano polecenie {package_json["request"]}')
@@ -35,16 +36,18 @@ def run_node(ip, port):
                 tosend['recieving_client'] = package_json['sender']
                 if package_json['request'] == 'transpose':
                     tosend['answer'] = matrix_functions.transpose(package_json['data'])
+                    print('Macierz po wykonaniu polecenia: ')
                 elif package_json['request'] == 'inverse':
                     tosend['answer'] = matrix_functions.inverse(package_json['data'])
+                    print('Macierz po wykonaniu polecenia: ')
                 else:
                     print('Nieznane polecenie!')
-                print('Macierz po wykonaniu polecenia: ')
+                    tosend['answer'] = 'Nieznane polecenie!'
+                print('Wysyłam odpowiedź: ')
                 print(tosend['answer'])
                 tosend_json = json.dumps(tosend)
                 node_socket.send(tosend_json.encode('utf-8'))
     except socket.error as exc:
-        #print()
         print(str(exc))
 
 run_node(server_ip, port_number)

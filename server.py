@@ -13,10 +13,9 @@ class FogServer():
     #struktura slownika - id_klienta: odpowiedz
     answers = {}
     requests = {}
-    idle_nodes = []
     request = ''
     requests = queue.Queue()
-    nodes_queue = []
+    node_queue = queue.Queue()
 
     def __init__(self, hostname=socket.gethostbyname(socket.gethostname()), clientport=5000, nodeport=4000, size=1024, fogsize=10):
         #przypisanie adresu ip i portow do komunikacji
@@ -58,7 +57,7 @@ class FogServer():
         while True:
             client_socket, client_address = self.clientsocket.accept()
             self.addclient(client_socket)
-            print(f'\nKlient podłączył się z adresu: {client_address}')
+            print(f'\nKlient podłączył się z adresu: {client_address}\n')
             self.client_threads.append(threading.Thread(target= self.clientconnection, args=(client_socket, client_address)))
             self.client_threads[-1].start()
             self.showclients()
@@ -67,13 +66,13 @@ class FogServer():
         while True:
             node_socket, node_address = self.nodesocket.accept()
             self.addnode(node_socket)
-            print(f'\nDodano węzeł pod adresem: {node_address}')
+            print(f'\nDodano węzeł pod adresem: {node_address}\n')
             self.shownodes()
             #self.node_threads.append(threading.Thread(target= self.nodeconnection, args=(node_socket, node_address)))
             self.node_threads.append(threading.Thread(target= self.nodeconnection, args=()))
             self.node_threads[-1].start()
-            self.nodes_queue.insert(0, (node_socket, node_address))
-            print('\nStatus kolejki: \n' + str(self.nodes_queue))
+            self.node_queue.put((node_socket, node_address))
+            self.showqueue()
 
     def clientconnection(self, client, address):
         tosend = {}
@@ -111,11 +110,7 @@ class FogServer():
                 while True:
                     if self.request != '':
                         break
-                print('\nStatus kolejki przed wyslaniem: \n' + str(self.nodes_queue))
-                node, address = self.select_node()
-                #node, address = self.nodes_queue[0]
-                #self.nodes_queue.append((node, address))
-                #del self.nodes_queue[0]
+                node, address = self.node_queue.get()
                 package = self.requests.get()
                 print(f'\nWysyłam polecenie na węzeł {address}')
                 node.send(json.dumps(package).encode('utf-8'))
@@ -125,7 +120,8 @@ class FogServer():
                 answer_json = json.loads(self.answer)
                 self.answer = ''
                 self.answers[answer_json['recieving_client']] = answer_json
-                print('\nStatus kolejki po aktualizacji: \n' + str(self.nodes_queue))
+                self.node_queue.put((node, address))
+                print('Kolejka wezlow: ' + str(list(self.node_queue.queue)))
             except socket.error as exc:
                 print(str(exc))
                 node.close()
@@ -133,12 +129,6 @@ class FogServer():
                 return False
         node.close()
         self.nodes.remove(node)
-
-    def select_node(self):
-        node, address = self.nodes_queue[0]
-        del self.nodes_queue[0]
-        self.nodes_queue.append((node, address))
-        return node, address
 
     def remove_dead_clients(self):
         while True:
@@ -182,6 +172,11 @@ class FogServer():
     def shownodes(self):
         print('Aktualnie dodane węzły: ')
         for node in self.nodes:
+            print(node)
+    
+    def showqueue(self):
+        print('Status kolejki węzłów: ')
+        for node in list(self.node_queue.queue):
             print(node)
     
 if __name__ == "__main__":

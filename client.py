@@ -1,5 +1,4 @@
 import socket
-import numpy as np 
 import time
 import hashlib
 import json
@@ -25,7 +24,6 @@ package = {}
 localtime = str(time.time())
 h = hashlib.sha1()
 h.update(localtime.encode('utf-8'))
-print(h.hexdigest())
 h_dig = h.hexdigest()
 package['sender'] = h_dig
 print(package)
