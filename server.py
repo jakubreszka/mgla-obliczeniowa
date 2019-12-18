@@ -186,5 +186,5 @@ class FogServer():
             print(node)
     
 if __name__ == "__main__":
-    server = FogServer(hostname='localhost')
+    server = FogServer(hostname='192.168.1.9')
     server.acceptconnections()
