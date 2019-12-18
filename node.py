@@ -14,7 +14,7 @@ def run_node(ip, port, size):
         #utworzenie socketu łączącego się z serwerem i połączenie się z serwerem
         node_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         node_socket.connect((server_ip, port_number))
-        print('Node otrzymuje polecenia z serwera o adresie: ' + server_ip + ':' + port_number, end='')
+        print('Node otrzymuje polecenia z serwera o adresie: ' + str(server_ip) + ':' + str(port_number), end='')
         #uruchomienie wątku obsługującego odbiór zapytań z serwear
         runner = threading.Thread(target=getrequests, args=(node_socket, size))
         runner.start()
@@ -23,7 +23,7 @@ def run_node(ip, port, size):
                 tosend = {}
                 #pobranie zapytania z kolejki
                 package_json = json.loads(request_queue.get())
-                print('Otrzymano polecenie: ' + package_json['request'])
+                print('Otrzymano polecenie: ' + str(package_json['request']))
                 print('Macierz przed wykonaniem polecenia: ')
                 print(package_json['data'])
                 tosend['receiving_client'] = package_json['sender']
