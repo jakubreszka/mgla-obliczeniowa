@@ -1,5 +1,4 @@
 import socket
-import matrix_functions
 import threading
 import json
 import queue
@@ -10,40 +9,38 @@ class FogServer():
     nodes = []
     client_threads = []
     node_threads = []
-    #struktura slownika - id_klienta: odpowiedz
     answers = {}
-    requests = {}
     request = ''
     requests = queue.Queue()
     node_queue = queue.Queue()
 
-    def __init__(self, hostname=socket.gethostbyname(socket.gethostname()), clientport=5000, nodeport=4000, size=1024, fogsize=10):
+    def __init__(self, hostname=socket.gethostbyname(socket.gethostname()), clientport=5000, nodeport=4000, size=65535):
         #przypisanie adresu ip i portow do komunikacji
         self.hostname = hostname
         self.clientport = clientport
         self.nodeport = nodeport
         self.size = size
-        #stworzenie i zbindowanie socketu
+        #stworzenie i zbindowanie socketu do komunikacji z węzłami
         self.clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.clientsocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) #mozliwosc ponownego wykorzystania adresu socketa
+        self.clientsocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.clientsocket.bind((self.hostname, self.clientport))
         #stworzenie i zbindowanie socketu do komunikacji z nodami
         self.nodesocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.nodesocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.nodesocket.bind((self.hostname, self.nodeport))
-        #zmienna warunkujaca liczbe polaczen ktore bedzie akceptowac system
-        self.fogsize = fogsize
 
     def acceptconnections(self):
+        #maksymalna liczba połączeń
         self.clientsocket.listen(10)
         self.nodesocket.listen(10)
         print(f'Akceptowanie klientów pod adresem: {self.hostname}:{self.clientport}')
         print(f'Dodawanie węzłów pod adresem: {self.hostname}:{self.nodeport}')
-        print()
+        #tworzenie wątków na metody obsługujące przychodzące i martwe połączenia
         client_listener = threading.Thread(target= self.acceptclients)
         node_listener = threading.Thread(target= self.acceptnodes)
         client_remover = threading.Thread(target= self.remove_dead_clients)
         node_remover = threading.Thread(target= self.remove_dead_nodes)
+        #uruchomienie wątków
         client_listener.start()
         node_listener.start()
         client_remover.start()
@@ -55,10 +52,13 @@ class FogServer():
 
     def acceptclients(self):
         while True:
+            #przyjmowanie połączeń przez socket klientów, dodanie klienta do listy
             client_socket, client_address = self.clientsocket.accept()
             self.addclient(client_socket)
+            #wyświetlenie dodanych klientów
             print(f'\nKlient podłączył się z adresu: {client_address}\n')
             self.showclients()
+            #utworzenie wątku na metodę zarządzającą połączeniem z klientem
             self.client_threads.append(threading.Thread(target= self.clientconnection, args=(client_socket, client_address)))
             self.client_threads[-1].start()
 
@@ -69,36 +69,36 @@ class FogServer():
             self.addnode(node_socket)
             print(f'\nDodano węzeł pod adresem: {node_address}\n')
             self.shownodes()
-            #self.node_threads.append(threading.Thread(target= self.nodeconnection, args=(node_socket, node_address)))
             self.node_threads.append(threading.Thread(target= self.nodeconnection, args=()))
             self.node_threads[-1].start()
-            #self.node_queue.put((node_socket, node_address))
             #self.showqueue()
 
     def clientconnection(self, client, address):
         tosend = {}
         while True:
             try:
+                #odbiór pakietu od klienta
                 self.request = client.recv(self.size).decode('utf-8')
                 print(f'\nOtrzymano polecenie {self.request} od klienta: {address}')
                 request_json = json.loads(self.request)
                 self.requests.put(request_json)
+                #sprawdzenie żądanego polecenia
                 if request_json['request'] == 'disconnect':
                     print(f'{address} rozłączył się')
                     self.clients.remove(client)
                     client.close()
-                #czesc wyzej wykonuje sie przed dodaniem noda
-                #petla while wykonuje sie w trakcie obslugi polaczenia noda
-                #kiedy znajduje traf, przerywa sie, konczy sie kod noda i wykonuje pozostaly tej funkcji
-                #zamienic to na threada
-                while True:
-                    if request_json['sender'] in self.answers:
-                        tosend = self.answers[request_json['sender']]
-                        self.answers.pop(request_json['sender'])
-                        break 
-                tosend_json = json.dumps(tosend)
-                print('\nWysyłam odpowiedź do klienta\n')
-                client.send(tosend_json.encode('utf-8'))
+                    break
+                else:
+                    #oczekiwanie na pojawienie się odpowiedzi z węzła
+                    while True:
+                        if request_json['sender'] in self.answers:
+                            tosend = self.answers[request_json['sender']]
+                            self.answers.pop(request_json['sender'])
+                            break 
+                    #wysłanie odpowiedzi do klienta
+                    tosend_json = json.dumps(tosend)
+                    print('\nWysyłam odpowiedź do klienta\n')
+                    client.send(tosend_json.encode('utf-8'))
             except:
                 self.clients.remove(client)
                 client.close()
@@ -111,19 +111,23 @@ class FogServer():
                 while True:
                     if self.request != '':
                         break
-                #print('Kolejka wezlow: ' + str(list(self.node_queue.queue)))
-                node, address = self.node_queue.get()
-                #self.node_queue.put((node, address))
                 package = self.requests.get()
-                print(f'\nWysyłam polecenie na węzeł {address}')
-                node.send(json.dumps(package).encode('utf-8'))
-                self.request = ''
-                self.answer = node.recv(self.size).decode('utf-8')
-                print('\nOdpowiedź z węzła: \n' + str(self.answer))
-                answer_json = json.loads(self.answer)
-                self.answer = ''
-                self.answers[answer_json['recieving_client']] = answer_json
-                self.node_queue.put((node, address))
+                if package['request'] == 'disconnect':
+                    pass
+                else:
+                    #wybranie kolejnego węzła i wysłanie zapytania
+                    node, address = self.node_queue.get()
+                    print(f'\nWysyłam polecenie na węzeł {address}')
+                    node.send(json.dumps(package).encode('utf-8'))
+                    self.request = ''
+                    #odebranie odpowiedzi od węzła i wstawienie do słownika
+                    self.answer = node.recv(self.size).decode('utf-8')
+                    print('\nOdpowiedź z węzła: \n' + str(self.answer))
+                    answer_json = json.loads(self.answer)
+                    self.answer = ''
+                    self.answers[answer_json['receiving_client']] = answer_json
+                    #wstawienie węzłą z powrotem do kolejki
+                    self.node_queue.put((node, address))
             except socket.error as exc:
                 print(str(exc))
                 node.close()

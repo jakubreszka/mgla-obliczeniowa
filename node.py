@@ -6,34 +6,30 @@ import threading
 
 server_ip   = 'localhost'
 port_number = 4000
-SIZE = 1024
-node_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-tosend = {}
+SIZE = 65535
 request_queue = queue.Queue()
 
-def getrequests():
-    while True:
-        package = node_socket.recv(SIZE).decode('utf-8')
-        request_queue.put(package)
-
-def showrequests():
-    print('Requesty znajdujące się na węźle: ')
-
-def run_node(ip, port):
+def run_node(ip, port, size):
     try:
+        #utworzenie socketu łączącego się z serwerem i połączenie się z serwerem
+        node_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         node_socket.connect((server_ip, port_number))
         print(f'Node otrzymuje polecenia z serwera o adresie: {server_ip}:{port_number}')
-        runner = threading.Thread(target=getrequests, args=())
+        #uruchomienie wątku obsługującego odbiór zapytań z serwear
+        runner = threading.Thread(target=getrequests, args=(node_socket, size))
         runner.start()
         while True:
-            package_json = {}
-            tosend = {}
             if request_queue.empty() is False:
+                tosend = {}
+                #pobranie zapytania z kolejki
                 package_json = json.loads(request_queue.get())
                 print(f'Otrzymano polecenie {package_json["request"]}')
                 print('Macierz przed wykonaniem polecenia: ')
                 print(package_json['data'])
-                tosend['recieving_client'] = package_json['sender']
+                tosend['receiving_client'] = package_json['sender']
+                tosend['request'] = package_json['request']
+                tosend['data'] = package_json['data']
+                #przetworzenie otrzymanej macierzy
                 if package_json['request'] == 'transpose':
                     tosend['answer'] = matrix_functions.transpose(package_json['data'])
                     print('Macierz po wykonaniu polecenia: ')
@@ -43,6 +39,7 @@ def run_node(ip, port):
                 else:
                     print('Nieznane polecenie!')
                     tosend['answer'] = 'Nieznane polecenie!'
+                #wysłanie odpowiedzi do serwera
                 print('Wysyłam odpowiedź: ')
                 print(tosend['answer'])
                 tosend_json = json.dumps(tosend)
@@ -50,4 +47,15 @@ def run_node(ip, port):
     except socket.error as exc:
         print(str(exc))
 
-run_node(server_ip, port_number)
+#odbieranie zapytań i wstawianie do kolejki
+def getrequests(node, size):
+    while True:
+        package = node.recv(size).decode('utf-8')
+        request_queue.put(package)
+
+#wyświetlenie kolejki zapytań
+def showrequests():
+    print('Requesty znajdujące się na węźle: \n' + str(list(request_queue.queue)))
+
+if __name__ == "__main__":
+    run_node(server_ip, port_number, SIZE)
